@@ -4,11 +4,11 @@
 
 ## 下载与安装
 
-1. 从 [GitHub Releases](https://github.com/zjqlyky/Codex-Keeper/releases/latest) 下载 `CodexKeeper-Setup-1.0.0-win-x64.exe`。
+1. 从 [GitHub Releases](https://github.com/zjqlyky/Codex-Keeper/releases/latest) 下载最新的 `CodexKeeper-Setup-*-win-x64.exe`。
 2. 可选地下载同名 `.sha256` 文件，并用 PowerShell 核对：
 
    ```powershell
-   Get-FileHash .\CodexKeeper-Setup-1.0.0-win-x64.exe -Algorithm SHA256
+   Get-FileHash .\CodexKeeper-Setup-*-win-x64.exe -Algorithm SHA256
    ```
 
 3. 运行安装程序。默认安装到当前用户的 `%LOCALAPPDATA%\Programs\Codex Keeper`，无需管理员权限。
@@ -33,6 +33,6 @@
 .\build-installer.ps1
 ```
 
-安装程序和 SHA-256 文件写入 `artifacts/`。默认版本从 `windows/CodexKeeper.Windows/CodexKeeper.Windows.csproj` 读取；也可以使用 `-Version 1.0.0` 指定版本。
+安装程序和 SHA-256 文件写入 `artifacts/`。默认版本从 `windows/CodexKeeper.Windows/CodexKeeper.Windows.csproj` 读取；也可以使用 `-Version 1.0.1` 指定版本。
 
-在 GitHub Actions 页面手动运行 `Windows installer release` 工作流并选择 `main` 分支，会在 Windows 2025 Runner 上发布自包含程序、编译 Inno Setup 安装程序，并创建标题为 `Codex Keeper for Windows V1.0` 的 GitHub Release。发布使用独立标签 `windows-v1.0`，保留仓库已有的 macOS `v1.0.0` 标签。Release 包含安装程序和 SHA-256 文件，说明来自 [`docs/RELEASES/V1.0.md`](RELEASES/V1.0.md)。
+在 GitHub Actions 页面手动运行 `Windows installer release` 工作流，选择 `main` 分支并输入版本号（例如 `1.0.1`），会在 Windows 2025 Runner 上发布自包含程序、编译 Inno Setup 安装程序，并创建 `windows-v<版本号>` 标签的 GitHub Release。此流程不会改动仓库原有的 macOS 标签。Release 包含安装程序和 SHA-256 文件；版本说明放在 [`docs/RELEASES/`](RELEASES/) 目录。
