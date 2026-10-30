@@ -1,0 +1,88 @@
+# Codex Keeper
+
+[简体中文](README.md)
+
+**Start quota windows on your schedule. Resume tasks when quota resets.**
+
+A small Codex utility in your Mac menu bar:
+
+- **Start the quota timer early:** Start a 5-hour quota window before you use Codex, following your daily schedule, so it is easier to plan around your routine.
+- **Resume after quota resets:** When a task pauses because quota runs out, automatically continue it once normal quota recovery is confirmed.
+- **Check quota anytime:** See your remaining 5-hour and weekly quota and the next keep-alive or resume time in the menu bar.
+
+## Requirements
+
+An Apple Silicon Mac running macOS 13 or later. Install Codex and sign in with a ChatGPT account first.
+
+This is a beta for local Codex tasks. Scheduled keep-alives require access to `gpt-6-luna`; Keeper does not increase your quota or bypass quota limits.
+
+## Getting started
+
+1. [Download the installer](https://github.com/OM-KEN/Codex-Keeper/releases/latest), drag Codex Keeper to **Applications**, and open it.
+2. Set a daily start time and select **Get Started**.
+
+Keep-alive and auto-resume are enabled by default. Click the menu bar icon to view quota, tasks, and settings. Local quota changes update the display, with periodic online checks. Turning off Enable Keeper pauses keep-alives, auto-resume, and quota monitoring; turning it back on restores them.
+
+Keep Keeper running and your Mac awake and online while using it.
+
+## Common questions
+
+<details>
+<summary>When does a paused task resume automatically?</summary>
+
+Tasks paused because quota runs out resume once normal quota recovery is confirmed. Keeper asks you to choose only when early recovery is confirmed.
+
+Select **Review task** in the reminder at the top of the menu, or use the system notification to choose:
+
+- **Continue now:** Try to resume after checking quota and task state.
+- **Continue as scheduled:** Try to resume at the next feasible scheduled time, after checking quota and task state again.
+- **Cancel this time:** Skip this continuation and preserve the task and its history.
+
+If you do not choose during early recovery, the task waits. It resumes automatically once normal recovery is confirmed. Temporary sync failures retry automatically without asking you to choose a recovery method.
+
+The trash button at the top right of a current task lets you ignore its current pause after confirmation. The task disappears from the list, while the original task and records remain. If you continue it manually and it later pauses for quota again, Keeper treats that as a new pause. Click a past keep-alive or resume point in the timeline to view its result.
+
+</details>
+
+<details>
+<summary>Can I change the message sent when a task resumes?</summary>
+
+Click the task entry in the menu to select tasks and choose a message mode:
+
+- **Default “Continue”**: The default for new tasks, with no text to enter.
+- **Custom message**: Opens an editor and preserves your text when you switch modes. Your custom message in Settings can supply the initial text.
+- **Use Codex Input**: Sends the task's saved draft text without attachments. An empty draft sends “Continue”; the original draft is preserved.
+
+The interface supports Simplified Chinese and English and follows the macOS language setting for the app. The default “Continue” follows the language; custom messages stay as written.
+
+If project files changed or cannot be checked, Keeper adds a reminder before the resume message asking Codex to check the project and progress first. You can turn it off in Settings.
+
+</details>
+
+<details>
+<summary>What if the app won't open or quota sync fails?</summary>
+
+The disk image is not notarized. If macOS blocks the first launch, verify the download source and follow [Apple's instructions for opening the app](https://support.apple.com/en-us/102445).
+
+If quota sync fails, Keeper retries automatically and keeps the last valid quota with its original update time. Scheduled keep-alives can still be attempted; auto-resume waits for a live confirmation. You can also click the refresh button beside the time. If it keeps failing, check your network, Codex sign-in, and version.
+
+If the official Codex CLI cannot be found, click the error message in the menu, enter or choose its executable file, then select **Save and Retry**. Paths with `~/` or spaces are supported. You only need to enter a path if automatic discovery fails.
+
+</details>
+
+<details>
+<summary>How do I check for updates or report a problem?</summary>
+
+Click the version number below **Settings…** in the menu to open About. It shows the app icon and version, lets you check for updates, and offers feedback by email or GitHub.
+
+Update Reminders are enabled by default. When a newer version is available, **Update Available** and a green up arrow appear after the version number. Important updates also show a one-time alert. After choosing **Later**, you can still open About and select **View Update on GitHub** to download it. You can turn off reminders in About or check manually at any time.
+
+</details>
+
+## License
+
+This project is open source under the [MIT License](LICENSE). You may use, modify, and distribute it, including for commercial use, provided you retain the copyright and license notice. See the [third-party notices](assets/NOTICE.md) for reused assets.
+
+---
+
+This is an independent project and is not affiliated with OpenAI. Developers can build it using the [development guide](docs/DEVELOPMENT.md), which is currently in Chinese.

@@ -1,19 +1,14 @@
 # Codex Keeper
 
 - 未经用户明确同意，不执行 Git push；提交、发布也不从普通修改请求中推定授权。
-- 项目根目录就是本目录。
-- 这是 Swift / SwiftUI / AppKit 原生 macOS 菜单栏工具，负责 Codex 保活和额度恢复后续跑。
-- 当前行为与限制读 `docs/DEVELOPMENT.md`；原始方案归档于 `docs/archive/design-v1.md`。
-- 构建：`./build.sh`；回归：`./run-tests.sh`；启动：`open .build/CodexKeeper.app`。
-- 版本每段限 0–9，超出时向前进位（如 0.1.9 → 0.2.0）；发布约定见 `docs/DEVELOPMENT.md`。
-- Release Notes 面向普通用户，简短、准确，可适当轻松有趣。除非 OM 明确要求跳过，先提供中文草稿，等待 OM 修改或确认，再以该中文为准补英文并按授权发布；文案与重大更新标记的延续约定见 `docs/DEVELOPMENT.md`。
-- 没有 xcodeproj；新增 Swift 源文件须更新 build.sh 的 SOURCES。
-- App、Core、Codex、UI 分别放生命周期、业务、Codex 接入和界面；Tests 与 Probes 用于验证。
-- 保活与续跑分开准入：保活使用已有可靠额度判断跳过或耗尽，额度未知可尝试一次，保留当前认证与账户、账本、防重和 Keeper 自身互斥；自动续跑继续保留额度、任务状态和工作区检查。
-- 修改额度读取时保留连接复用和用途隔离；专用查询的配置覆盖不能影响续跑，机制与流量验证边界见 `docs/DEVELOPMENT.md`。
-- 确认执行结果必须检查真实日志；不能将 started、进程退出成功或普通 OK 回复当作保活成功。
-- 运行数据位于 `~/Library/Application Support/CodexKeeper/`，不要清空尝试记录或挪动用户任务历史。
-- 本机 CLI 更新提醒是 OM 的个人工具，源码与测试位于仓库外的 `~/Library/Application Support/CodexKeeper/update-reminder/tool/`，不纳入 Git 或 Keeper 安装包。每天 09:00 只读指纹和官方更新说明，不调用模型；本机维护说明见工具目录的 `README.md`，不要恢复高频 Codex 自动化。
-- 替换或重启应用前先检查是否有正在执行的 Keeper 操作，避免丢失确认记录。
-- `.build/` 是本地构建与隔离验证输出；旧副本不是现役源码或指令。
-- 精准修改；UI 保持主次清晰，不把后台边缘逻辑堆成用户选项。
+- 项目根目录就是本目录。当前默认目标是 Windows 原生 WPF 托盘应用，源码位于 `windows/CodexKeeper.Windows/`，解决方案是根目录 `CodexKeeper.Windows.sln`。
+- Windows 行为、限制、数据位置和构建方式见 `docs/WINDOWS.md`；根目录原 Swift / SwiftUI / AppKit 实现保留为 macOS 原版，说明见 `docs/DEVELOPMENT.md`。
+- 构建 Windows 目标：`./build.ps1`；发布独立 Windows x64 单文件：`./publish.ps1`。原 macOS 脚本 `build.sh` 和 `run-tests.sh` 仅适用于 macOS 原版。
+- 不因普通修改请求推定可以提交、推送、发布或替换用户安装的应用。
+- 自动保活和续跑必须 fail closed：核对 ChatGPT 账户、最新额度、当前登记的 thread 与 rollout、工作目录、额度恢复时间；身份或状态不明时不发送，也不猜测文件名对应的 thread ID。
+- 保活不得触碰 Codex 用户工作区或更改其配置；使用临时隔离 home、只读 sandbox、无工具提示，依据模型实际回复和新额度读数确认结果。尝试记录在提交前持久化，未知提交结果不自动重发。
+- app-server 是版本敏感接口。只读查询 Codex 状态数据库；不改 SQLite journal、用户数据或正在运行的 Codex 会话。日志不保存凭据、提示词、完整路径或原始 rollout 内容。
+- Windows 用户设置位于 `%LOCALAPPDATA%\CodexKeeper\settings.json`；保活隔离目录在系统临时目录，正常完成后清理。不要复制、清空或迁移 Codex 的本地任务历史。
+- 不新增外部运行时依赖，除非 Windows SDK 已提供的方案无法满足需求。默认设置保持关闭，启动 Windows 和自动续跑都是用户可选项。
+- UI 文案须同时支持简体中文与英语；系统语言决定默认显示语言。UI 保持主次清晰，不把后台边缘逻辑堆成用户选项。
+- `.build/`、`bin/`、`obj/` 和 `.publish/` 是生成输出；旧副本不是现役源码或指令。

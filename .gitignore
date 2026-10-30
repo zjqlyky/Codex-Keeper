@@ -1,3 +1,8 @@
 .build/
 .workbuddy/
+**/bin/
+**/obj/
+.publish/
+/CodexKeeper.Windows.exe
+/CodexKeeper.Windows.*.exe
 .DS_Store

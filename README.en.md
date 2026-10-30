@@ -1,88 +1,59 @@
-# Codex Keeper
+# Codex Keeper for Windows
 
 [简体中文](README.md)
 
-**Start quota windows on your schedule. Resume tasks when quota resets.**
+Codex Keeper is a Windows tray companion that checks Codex usage on a daily schedule and resumes eligible paused tasks after quota recovers at its scheduled reset.
 
-A small Codex utility in your Mac menu bar:
+The Windows version is a preview. There is no official installer yet.
 
-- **Start the quota timer early:** Start a 5-hour quota window before you use Codex, following your daily schedule, so it is easier to plan around your routine.
-- **Resume after quota resets:** When a task pauses because quota runs out, automatically continue it once normal quota recovery is confirmed.
-- **Check quota anytime:** See your remaining 5-hour and weekly quota and the next keep-alive or resume time in the menu bar.
+## Features
+
+- View 5-hour and weekly usage from the system tray.
+- List saved Codex projects and local tasks, choose the scope by project path and task title, and retain choices across restarts.
+- Set a daily start time. Keeper checks again every five hours and skips keep-alive when a usable window is already active, quota is exhausted, or Codex is working on a task.
+- Resume only after checking the account, original task, working directory, and quota-reset evidence. If quota recovers early, Keeper waits until the scheduled reset so you can review the original task first.
+- Closing the window minimizes Keeper to the tray. Starting with Windows is optional.
+
+Keeper does not add quota or bypass limits. Keep-alive requires an account that offers `gpt-6-luna`.
 
 ## Requirements
 
-An Apple Silicon Mac running macOS 13 or later. Install Codex and sign in with a ChatGPT account first.
+- Windows 10/11 x64.
+- Codex installed and signed in with a ChatGPT account.
+- Codex CLI discoverable on `PATH` or in its default install location. If automatic discovery fails, choose `codex.exe` in settings.
 
-This is a beta for local Codex tasks. Scheduled keep-alives require access to `gpt-6-luna`; Keeper does not increase your quota or bypass quota limits.
+Select projects in “Codex projects”, then enable Keeper and set the daily start time. With no project selected, scheduled keep-alive is paused. Quota is shared by the account, so one isolated keep-alive serves the selected projects without sending repeated prompts to their original tasks.
 
-## Getting started
+For automatic resume, separately check specific tasks in “Task recovery” and enable automatic resume. Checking a project does not select its tasks. Only explicitly selected tasks in selected projects may continue after a verified quota stop and reset.
 
-1. [Download the installer](https://github.com/OM-KEN/Codex-Keeper/releases/latest), drag Codex Keeper to **Applications**, and open it.
-2. Set a daily start time and select **Get Started**.
+Keeper starts disabled. Keep Keeper running, keep the PC awake, and stay online during scheduled use. You can enable “Start with Windows”.
 
-Keep-alive and auto-resume are enabled by default. Click the menu bar icon to view quota, tasks, and settings. Local quota changes update the display, with periodic online checks. Turning off Enable Keeper pauses keep-alives, auto-resume, and quota monitoring; turning it back on restores them.
+## Build
 
-Keep Keeper running and your Mac awake and online while using it.
+Install the .NET 9 SDK and Windows Desktop targeting pack, then run this from the repository root:
 
-## Common questions
+```powershell
+.\build.ps1
+```
 
-<details>
-<summary>When does a paused task resume automatically?</summary>
+Publish a self-contained x64 single-file app:
 
-Tasks paused because quota runs out resume once normal quota recovery is confirmed. Keeper asks you to choose only when early recovery is confirmed.
+```powershell
+.\publish.ps1
+```
 
-Select **Review task** in the reminder at the top of the menu, or use the system notification to choose:
+Output is written to `.publish\win-x64\`, and a versioned standalone executable is copied to the repository root. If Keeper is running, publishing preserves its current executable; quit it from the tray menu and publish again to update `CodexKeeper.Windows.exe`. You can also open `CodexKeeper.Windows.sln` in Visual Studio.
 
-- **Continue now:** Try to resume after checking quota and task state.
-- **Continue as scheduled:** Try to resume at the next feasible scheduled time, after checking quota and task state again.
-- **Cancel this time:** Skip this continuation and preserve the task and its history.
+## Windows version notes
 
-If you do not choose during early recovery, the task waits. It resumes automatically once normal recovery is confirmed. Temporary sync failures retry automatically without asking you to choose a recovery method.
+This version uses the Codex `app-server` to read usage and submit task turns. Task recovery also reads Codex's current `state*.sqlite` database in read-only mode and follows its registered rollout paths. Codex's local task data and app-server protocol can change between versions. Keeper stops automatic actions when it cannot confirm the account, task ownership, reset time, or working directory. After updating Codex, check that Keeper can still read usage and task state.
 
-The trash button at the top right of a current task lets you ignore its current pause after confirmation. The task disappears from the list, while the original task and records remain. If you continue it manually and it later pauses for quota again, Keeper treats that as a new pause. Click a past keep-alive or resume point in the timeline to view its result.
+Settings, including selected project paths and task IDs, are stored in `%LOCALAPPDATA%\CodexKeeper\settings.json`. Keep-alive uses a temporary isolated directory and removes it when the operation ends; account credentials are not written to settings or activity history. Set `CODEX_HOME` when Codex uses a non-default data directory.
 
-</details>
+## Original macOS version
 
-<details>
-<summary>Can I change the message sent when a task resumes?</summary>
-
-Click the task entry in the menu to select tasks and choose a message mode:
-
-- **Default “Continue”**: The default for new tasks, with no text to enter.
-- **Custom message**: Opens an editor and preserves your text when you switch modes. Your custom message in Settings can supply the initial text.
-- **Use Codex Input**: Sends the task's saved draft text without attachments. An empty draft sends “Continue”; the original draft is preserved.
-
-The interface supports Simplified Chinese and English and follows the macOS language setting for the app. The default “Continue” follows the language; custom messages stay as written.
-
-If project files changed or cannot be checked, Keeper adds a reminder before the resume message asking Codex to check the project and progress first. You can turn it off in Settings.
-
-</details>
-
-<details>
-<summary>What if the app won't open or quota sync fails?</summary>
-
-The disk image is not notarized. If macOS blocks the first launch, verify the download source and follow [Apple's instructions for opening the app](https://support.apple.com/en-us/102445).
-
-If quota sync fails, Keeper retries automatically and keeps the last valid quota with its original update time. Scheduled keep-alives can still be attempted; auto-resume waits for a live confirmation. You can also click the refresh button beside the time. If it keeps failing, check your network, Codex sign-in, and version.
-
-If the official Codex CLI cannot be found, click the error message in the menu, enter or choose its executable file, then select **Save and Retry**. Paths with `~/` or spaces are supported. You only need to enter a path if automatic discovery fails.
-
-</details>
-
-<details>
-<summary>How do I check for updates or report a problem?</summary>
-
-Click the version number below **Settings…** in the menu to open About. It shows the app icon and version, lets you check for updates, and offers feedback by email or GitHub.
-
-Update Reminders are enabled by default. When a newer version is available, **Update Available** and a green up arrow appear after the version number. Important updates also show a one-time alert. After choosing **Later**, you can still open About and select **View Update on GitHub** to download it. You can turn off reminders in About or check manually at any time.
-
-</details>
+The original Swift / SwiftUI macOS source and instructions remain in the repository. See the [macOS README](README.en.macos.md). The Windows app lives in `windows/CodexKeeper.Windows/`.
 
 ## License
 
-This project is open source under the [MIT License](LICENSE). You may use, modify, and distribute it, including for commercial use, provided you retain the copyright and license notice. See the [third-party notices](assets/NOTICE.md) for reused assets.
-
----
-
-This is an independent project and is not affiliated with OpenAI. Developers can build it using the [development guide](docs/DEVELOPMENT.md), which is currently in Chinese.
+This project is licensed under the [MIT License](LICENSE). It is an independent project and is not affiliated with OpenAI.

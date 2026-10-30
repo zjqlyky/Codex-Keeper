@@ -1,6 +1,12 @@
 # 开发说明
 
-## 构建与运行
+当前仓库的默认目标是 Windows 原生应用，构建、行为与兼容性以 [Windows 开发说明](WINDOWS.md) 为准。下方开发与验证记录描述仓库保留的原 macOS Swift / SwiftUI 版本。
+
+## Windows 构建
+
+在 Windows 上安装 .NET 9 SDK 和 Windows Desktop targeting pack 后，从仓库根目录运行 `./build.ps1`；自包含 x64 发布运行 `./publish.ps1`。解决方案为 `CodexKeeper.Windows.sln`。
+
+## 原 macOS 版本的构建与运行
 
 需要 Apple Silicon Mac 和 Xcode Command Line Tools（`xcode-select --install`）。在项目根目录运行：
 

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AssemblyName>CodexKeeper.Windows</AssemblyName>
+    <RootNamespace>CodexKeeper.Windows</RootNamespace>
+    <Product>Codex Keeper</Product>
+    <Version>1.4.1</Version>
+    <Company>OM-KEN</Company>
+    <Description>Windows tray companion for Codex quota scheduling and task recovery</Description>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Resources\codex-keeper.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Resources\codex-keeper.ico" />
+    <Resource Include="Resources\codex-keeper.ico" />
+  </ItemGroup>
+</Project>
