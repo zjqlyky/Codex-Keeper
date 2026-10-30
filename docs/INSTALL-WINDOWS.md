@@ -35,4 +35,4 @@
 
 安装程序和 SHA-256 文件写入 `artifacts/`。默认版本从 `windows/CodexKeeper.Windows/CodexKeeper.Windows.csproj` 读取；也可以使用 `-Version 1.0.0` 指定版本。
 
-推送 `v1.0.0` 标签会触发 GitHub Actions：在 Windows 2025 Runner 上发布自包含程序、编译 Inno Setup 安装程序，并创建标题为 `V1.0` 的 GitHub Release。Release 包含安装程序和 SHA-256 文件，说明来自 [`docs/RELEASES/V1.0.md`](RELEASES/V1.0.md)。
+推送 `windows-v1.0.0` 标签会触发 GitHub Actions：在 Windows 2025 Runner 上发布自包含程序、编译 Inno Setup 安装程序，并创建标题为 `V1.0` 的 GitHub Release。Windows 使用独立标签，保留仓库已有的 macOS `v1.0.0` 标签。Release 包含安装程序和 SHA-256 文件，说明来自 [`docs/RELEASES/V1.0.md`](RELEASES/V1.0.md)。

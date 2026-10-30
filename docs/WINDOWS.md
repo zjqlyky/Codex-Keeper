@@ -22,7 +22,7 @@ Windows 默认目标是 `windows/CodexKeeper.Windows/` 中的 .NET WPF 托盘应
 .\build-installer.ps1
 ```
 
-输出位于 `artifacts/`。推送 `v1.0.0` 标签后，`.github/workflows/release-windows.yml` 会在 Windows 2025 Runner 上构建安装程序与 SHA-256 文件，并创建 GitHub Release。安装步骤、卸载行为和发布资产说明见 [Windows 安装说明](INSTALL-WINDOWS.md)。
+输出位于 `artifacts/`。推送 `windows-v1.0.0` 标签后，`.github/workflows/release-windows.yml` 会在 Windows 2025 Runner 上构建安装程序与 SHA-256 文件，并创建 GitHub Release。安装步骤、卸载行为和发布资产说明见 [Windows 安装说明](INSTALL-WINDOWS.md)。
 
 发布结果位于 `.publish\win-x64\`，带版本号的可运行文件也会复制到仓库根目录。Keeper 正在运行时，脚本不会覆盖其 exe；从托盘退出后再次发布即可更新 `CodexKeeper.Windows.exe`。项目不依赖额外 NuGet 包。
 

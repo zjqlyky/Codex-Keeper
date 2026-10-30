@@ -3,7 +3,7 @@ name: Windows installer release
 on:
   push:
     tags:
-      - "v1.0.0"
+      - "windows-v1.0.0"
 
 permissions:
   contents: write

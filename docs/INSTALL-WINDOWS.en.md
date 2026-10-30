@@ -35,4 +35,4 @@ Install the .NET 9 SDK, Windows Desktop targeting pack, and Inno Setup 6, then r
 
 The installer and its SHA-256 file are written to `artifacts/`. The version defaults to the value in `windows/CodexKeeper.Windows/CodexKeeper.Windows.csproj`; override it with `-Version 1.0.0` if needed.
 
-Pushing the `v1.0.0` tag triggers GitHub Actions on a Windows 2025 runner. It publishes the self-contained app, compiles the Inno Setup installer, and creates a GitHub Release titled `V1.0` with the installer and checksum. Release notes are in [`docs/RELEASES/V1.0.md`](RELEASES/V1.0.md).
+Pushing the `windows-v1.0.0` tag triggers GitHub Actions on a Windows 2025 runner. It publishes the self-contained app, compiles the Inno Setup installer, and creates a GitHub Release titled `V1.0` with the installer and checksum. This Windows tag preserves the repository's existing macOS `v1.0.0` tag. Release notes are in [`docs/RELEASES/V1.0.md`](RELEASES/V1.0.md).

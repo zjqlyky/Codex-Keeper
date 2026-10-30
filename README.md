@@ -50,7 +50,7 @@ Keeper 默认处于停用状态。使用计划期间，请保持 Keeper 运行�
 .\build-installer.ps1
 ```
 
-GitHub Actions 在推送 `v1.0.0` 标签时自动构建安装包并创建 Release。打包与发布说明见 [Windows 安装说明](docs/INSTALL-WINDOWS.md)。
+GitHub Actions 在推送 `windows-v1.0.0` 标签时自动构建安装包并创建 Release。打包与发布说明见 [Windows 安装说明](docs/INSTALL-WINDOWS.md)。
 
 输出位于 `.publish\win-x64\`，并将版本号 exe 复制到仓库根目录。Keeper 正在运行时发布脚本会保留现有副本；退出托盘程序后再次发布即可更新 `CodexKeeper.Windows.exe`。Visual Studio 也可打开根目录的 `CodexKeeper.Windows.sln`。
 
