@@ -1,9 +1,7 @@
 name: Windows installer release
 
 on:
-  push:
-    tags:
-      - "windows-v1.0.0"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -24,12 +22,23 @@ jobs:
         shell: pwsh
         run: .\build-installer.ps1 -Version 1.0.0
 
+      - name: Point release tag at this source
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "windows-v1.0.0"
+          & git tag --force $tag $env:GITHUB_SHA
+          if ($LASTEXITCODE -ne 0) { throw "Could not create the Windows V1.0 tag." }
+          & git push --force origin "refs/tags/$tag"
+          if ($LASTEXITCODE -ne 0) { throw "Could not push the Windows V1.0 tag." }
+
       - name: Create V1.0 GitHub Release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = $env:GITHUB_REF_NAME
+          $tag = "windows-v1.0.0"
           $repo = $env:GITHUB_REPOSITORY
           $title = "Codex Keeper for Windows V1.0"
           $notes = "docs/RELEASES/V1.0.md"
