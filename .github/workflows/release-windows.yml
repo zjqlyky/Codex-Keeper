@@ -2,6 +2,12 @@ name: Windows installer release
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: Windows release version
+        required: true
+        default: "1.0.1"
+        type: string
 
 permissions:
   contents: write
@@ -20,19 +26,29 @@ jobs:
 
       - name: Build installer
         shell: pwsh
-        run: .\build-installer.ps1 -Version 1.0.0
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          $version = $env:RELEASE_VERSION
+          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "Version must use major.minor.patch format." }
+          .\build-installer.ps1 -Version $version
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Create V1.0 GitHub Release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.version }}
         run: |
-          $tag = "windows-v1.0"
+          $version = $env:RELEASE_VERSION
+          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "Version must use major.minor.patch format." }
+          $tag = "windows-v$version"
           $repo = $env:GITHUB_REPOSITORY
-          $title = "Codex Keeper for Windows V1.0"
-          $notes = "docs/RELEASES/V1.0.md"
-          $installer = "artifacts/CodexKeeper-Setup-1.0.0-win-x64.exe"
+          $title = "Codex Keeper for Windows V$version"
+          $notes = "docs/RELEASES/V$version.md"
+          $installer = "artifacts/CodexKeeper-Setup-$version-win-x64.exe"
           $checksum = "$installer.sha256"
+          if (-not (Test-Path -LiteralPath $notes)) { throw "Release notes were not found: $notes" }
 
           & gh release view $tag --repo $repo 2>$null
           $releaseExists = $LASTEXITCODE -eq 0
@@ -43,4 +59,4 @@ jobs:
           } else {
             & gh release create $tag $installer $checksum --title $title --notes-file $notes --target $env:GITHUB_SHA --repo $repo
           }
-          if ($LASTEXITCODE -ne 0) { throw "Could not create or update the V1.0 release." }
+          if ($LASTEXITCODE -ne 0) { throw "Could not create or update the Windows release." }
