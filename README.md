@@ -4,7 +4,7 @@
 
 Codex Keeper 是 Windows 托盘助手，可按每日计划核对 Codex 额度，并在额度按计划恢复后继续符合条件的暂停任务。
 
-当前 Windows 版本为预览版，尚未发布正式安装包。
+Windows 安装包可从 [GitHub Releases](https://github.com/zjqlyky/Codex-Keeper/releases/latest) 下载。V1.0 使用独立安装程序，无需另外安装 .NET Runtime。
 
 ## 功能
 
@@ -22,13 +22,15 @@ Keeper 不会增加额度或绕过额度限制。保活需要账户提供 `gpt-6
 - 安装 Codex 并登录 ChatGPT 账户。
 - Codex CLI 可通过 `PATH` 或默认安装路径找到；如果自动查找失败，可在设置中选择 `codex.exe`。
 
+安装、升级和卸载步骤见 [Windows 安装说明](docs/INSTALL-WINDOWS.md)。
+
 先在“Codex 项目”中勾选需要保活的项目，再启用 Keeper 并设置每日开始时间。未勾选项目时不执行计划保活。额度由账户共享，一次隔离保活即可服务所选项目，不会向每个原任务重复发送提示。
 
 需要自动续跑时，在“任务恢复”中另外勾选具体任务，并启用“额度恢复后自动续跑”。项目勾选不会自动选中任务；只有所选项目内明确勾选、因额度停止且已核对重置证据的任务才会继续。
 
 Keeper 默认处于停用状态。使用计划期间，请保持 Keeper 运行、电脑唤醒并联网；可开启“登录 Windows 时启动”。
 
-## 构建
+## 构建与打包
 
 安装 .NET 9 SDK 和 Windows Desktop targeting pack 后，在仓库根目录运行：
 
@@ -41,6 +43,14 @@ Keeper 默认处于停用状态。使用计划期间，请保持 Keeper 运行�
 ```powershell
 .\publish.ps1
 ```
+
+安装 Inno Setup 6 后，可创建本地安装包：
+
+```powershell
+.\build-installer.ps1
+```
+
+GitHub Actions 在推送 `v1.0.0` 标签时自动构建安装包并创建 Release。打包与发布说明见 [Windows 安装说明](docs/INSTALL-WINDOWS.md)。
 
 输出位于 `.publish\win-x64\`，并将版本号 exe 复制到仓库根目录。Keeper 正在运行时发布脚本会保留现有副本；退出托盘程序后再次发布即可更新 `CodexKeeper.Windows.exe`。Visual Studio 也可打开根目录的 `CodexKeeper.Windows.sln`。
 

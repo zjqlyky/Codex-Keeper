@@ -3,6 +3,8 @@
 **/bin/
 **/obj/
 .publish/
+/artifacts/
+/dist/
 /CodexKeeper.Windows.exe
 /CodexKeeper.Windows.*.exe
 .DS_Store

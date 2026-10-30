@@ -4,7 +4,7 @@
 
 Codex Keeper is a Windows tray companion that checks Codex usage on a daily schedule and resumes eligible paused tasks after quota recovers at its scheduled reset.
 
-The Windows version is a preview. There is no official installer yet.
+Download the Windows installer from [GitHub Releases](https://github.com/zjqlyky/Codex-Keeper/releases/latest). V1.0 uses a self-contained installer and does not require a separate .NET Runtime installation.
 
 ## Features
 
@@ -22,13 +22,15 @@ Keeper does not add quota or bypass limits. Keep-alive requires an account that 
 - Codex installed and signed in with a ChatGPT account.
 - Codex CLI discoverable on `PATH` or in its default install location. If automatic discovery fails, choose `codex.exe` in settings.
 
+See the [Windows installation guide](docs/INSTALL-WINDOWS.md) for installation, upgrades, and uninstall instructions.
+
 Select projects in “Codex projects”, then enable Keeper and set the daily start time. With no project selected, scheduled keep-alive is paused. Quota is shared by the account, so one isolated keep-alive serves the selected projects without sending repeated prompts to their original tasks.
 
 For automatic resume, separately check specific tasks in “Task recovery” and enable automatic resume. Checking a project does not select its tasks. Only explicitly selected tasks in selected projects may continue after a verified quota stop and reset.
 
 Keeper starts disabled. Keep Keeper running, keep the PC awake, and stay online during scheduled use. You can enable “Start with Windows”.
 
-## Build
+## Build and package
 
 Install the .NET 9 SDK and Windows Desktop targeting pack, then run this from the repository root:
 
@@ -41,6 +43,14 @@ Publish a self-contained x64 single-file app:
 ```powershell
 .\publish.ps1
 ```
+
+With Inno Setup 6 installed, create a local installer:
+
+```powershell
+.\build-installer.ps1
+```
+
+GitHub Actions builds the installer and creates a Release when the `v1.0.0` tag is pushed. See the [Windows installation guide](docs/INSTALL-WINDOWS.md) for packaging and release details.
 
 Output is written to `.publish\win-x64\`, and a versioned standalone executable is copied to the repository root. If Keeper is running, publishing preserves its current executable; quit it from the tray menu and publish again to update `CodexKeeper.Windows.exe`. You can also open `CodexKeeper.Windows.sln` in Visual Studio.
 

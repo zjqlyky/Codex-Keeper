@@ -1,0 +1,48 @@
+name: Windows installer release
+
+on:
+  push:
+    tags:
+      - "v1.0.0"
+
+permissions:
+  contents: write
+
+jobs:
+  installer:
+    runs-on: windows-2025
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Build installer
+        shell: pwsh
+        run: .\build-installer.ps1 -Version 1.0.0
+
+      - name: Create V1.0 GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $repo = $env:GITHUB_REPOSITORY
+          $title = "Codex Keeper for Windows V1.0"
+          $notes = "docs/RELEASES/V1.0.md"
+          $installer = "artifacts/CodexKeeper-Setup-1.0.0-win-x64.exe"
+          $checksum = "$installer.sha256"
+
+          & gh release view $tag --repo $repo 2>$null
+          $releaseExists = $LASTEXITCODE -eq 0
+          if ($releaseExists) {
+            & gh release upload $tag $installer $checksum --clobber --repo $repo
+            if ($LASTEXITCODE -ne 0) { throw "Could not upload the installer assets." }
+            & gh release edit $tag --title $title --notes-file $notes --repo $repo
+          } else {
+            & gh release create $tag $installer $checksum --title $title --notes-file $notes --verify-tag --repo $repo
+          }
+          if ($LASTEXITCODE -ne 0) { throw "Could not create or update the V1.0 release." }

@@ -67,7 +67,7 @@ public sealed class CodexAppServerClient : IAsyncDisposable
         {
             await client.RequestAsync("initialize", new JsonObject
             {
-                ["clientInfo"] = new JsonObject { ["name"] = "codex_keeper_windows", ["title"] = "Codex Keeper", ["version"] = "1.4.1" },
+                ["clientInfo"] = new JsonObject { ["name"] = "codex_keeper_windows", ["title"] = "Codex Keeper", ["version"] = "1.0.0" },
                 ["capabilities"] = new JsonObject { ["experimentalApi"] = true }
             }, cancellationToken);
             await client.NotifyAsync("initialized", null, cancellationToken);
