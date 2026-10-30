@@ -50,7 +50,7 @@ With Inno Setup 6 installed, create a local installer:
 .\build-installer.ps1
 ```
 
-Manually run the Windows installer release workflow from the GitHub Actions page on the `main` branch to build the installer and create the `windows-v1.0` Release. See the [Windows installation guide](docs/INSTALL-WINDOWS.md) for packaging and release details.
+Manually run the `Windows installer release` workflow from GitHub Actions on the `main` branch to build the installer and publish the selected Windows release version. See the [Windows installation guide](docs/INSTALL-WINDOWS.en.md) for packaging and release details.
 
 Output is written to `.publish\win-x64\`, and a versioned standalone executable is copied to the repository root. If Keeper is running, publishing preserves its current executable; quit it from the tray menu and publish again to update `CodexKeeper.Windows.exe`. You can also open `CodexKeeper.Windows.sln` in Visual Studio.
 
