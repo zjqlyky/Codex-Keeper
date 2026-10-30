@@ -4,11 +4,11 @@
 
 ## Download and install
 
-1. Download `CodexKeeper-Setup-1.0.0-win-x64.exe` from [GitHub Releases](https://github.com/zjqlyky/Codex-Keeper/releases/latest).
+1. Download the latest `CodexKeeper-Setup-*-win-x64.exe` from [GitHub Releases](https://github.com/zjqlyky/Codex-Keeper/releases/latest).
 2. Optionally download the matching `.sha256` file and verify it in PowerShell:
 
    ```powershell
-   Get-FileHash .\CodexKeeper-Setup-1.0.0-win-x64.exe -Algorithm SHA256
+   Get-FileHash .\CodexKeeper-Setup-*-win-x64.exe -Algorithm SHA256
    ```
 
 3. Run the installer. The default per-user location is `%LOCALAPPDATA%\Programs\Codex Keeper`; administrator rights are not required.
@@ -33,6 +33,6 @@ Install the .NET 9 SDK, Windows Desktop targeting pack, and Inno Setup 6, then r
 .\build-installer.ps1
 ```
 
-The installer and its SHA-256 file are written to `artifacts/`. The version defaults to the value in `windows/CodexKeeper.Windows/CodexKeeper.Windows.csproj`; override it with `-Version 1.0.0` if needed.
+The installer and its SHA-256 file are written to `artifacts/`. The version defaults to the value in `windows/CodexKeeper.Windows/CodexKeeper.Windows.csproj`; override it with `-Version 1.0.1` if needed.
 
-Manually run the `Windows installer release` workflow from the GitHub Actions page on the `main` branch. It publishes the self-contained app, compiles the Inno Setup installer on a Windows 2025 runner, and creates `Codex Keeper for Windows V1.0` with the installer and checksum. The release uses the separate `windows-v1.0` tag and preserves the repository's existing macOS `v1.0.0` tag. Release notes are in [`docs/RELEASES/V1.0.md`](RELEASES/V1.0.md).
+Manually run the `Windows installer release` workflow from GitHub Actions on the `main` branch and enter the desired version, such as `1.0.1`. It publishes the self-contained app and compiles the Inno Setup installer on a Windows 2025 runner, then creates a `windows-v<version>` GitHub Release with the installer and checksum. This preserves the repository's existing macOS tags. Release notes are stored in [`docs/RELEASES/`](RELEASES/).
