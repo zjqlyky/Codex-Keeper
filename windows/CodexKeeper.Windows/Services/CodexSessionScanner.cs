@@ -23,6 +23,7 @@ public sealed class CodexSessionScanner(SettingsStore store)
             var database = FindCurrentDatabase(store.CodexHome);
             if (database is null) return new(false, [], false, Localization.Text("activity.taskScan"), savedProjects, []);
             var catalog = ReadThreads(database);
+            var currentThreadNames = ReadCurrentThreadNames(store.CodexHome);
             var paused = new List<PausedTask>();
             var tasks = new List<CodexTask>();
             var running = false;
@@ -65,7 +66,10 @@ public sealed class CodexSessionScanner(SettingsStore store)
                 else if (!ownsTask) reason = Localization.Text(string.IsNullOrWhiteSpace(boundAccount) ? "activity.account" : "activity.authChanged");
                 else if (!Directory.Exists(cwd)) reason = Localization.Text("activity.workspace");
                 else if (blocked && !evidence) reason = Localization.Text("activity.noQuotaEvidence");
-                tasks.Add(new CodexTask(row.ThreadId, DisplayTitle(row.Title, project), project, cwd, row.UpdatedAt,
+                // Codex's sidebar title is kept in session_index.jsonl. The SQLite title can remain the
+                // original prompt after a conversation has been renamed in Codex.
+                var title = currentThreadNames.TryGetValue(row.ThreadId, out var currentTitle) ? currentTitle : row.Title;
+                tasks.Add(new CodexTask(row.ThreadId, DisplayTitle(title, project), project, cwd, row.UpdatedAt,
                     verified && state!.IsRunning, blocked, canSelect, reason, verified));
                 if (!canSelect || !blocked || !evidence) continue;
                 var at = state!.BlockedAt!.Value;
@@ -94,6 +98,32 @@ public sealed class CodexSessionScanner(SettingsStore store)
             .OrderByDescending(path => Math.Max(File.GetLastWriteTimeUtc(path).Ticks,
                 File.Exists(path + "-wal") ? File.GetLastWriteTimeUtc(path + "-wal").Ticks : 0))
             .FirstOrDefault();
+    }
+
+    private static IReadOnlyDictionary<string, string> ReadCurrentThreadNames(string codexHome)
+    {
+        var names = new Dictionary<string, string>(StringComparer.Ordinal);
+        var indexPath = Path.Combine(codexHome, "session_index.jsonl");
+        try
+        {
+            using var stream = new FileStream(indexPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            using var reader = new StreamReader(stream, new System.Text.UTF8Encoding(false));
+            while (reader.ReadLine() is { } line)
+            {
+                try
+                {
+                    if (JsonNode.Parse(line) is not JsonObject item) continue;
+                    var threadId = item["id"]?.ToString();
+                    var name = item["thread_name"]?.ToString();
+                    if (!string.IsNullOrWhiteSpace(threadId) && !string.IsNullOrWhiteSpace(name))
+                        names[threadId] = name.Trim();
+                }
+                catch (JsonException) { }
+            }
+        }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+        return names;
     }
 
     private static string ResolveRolloutPath(string path, string codexHome)
@@ -425,3 +455,4 @@ public sealed class CodexSessionScanner(SettingsStore store)
         }
     }
 }
+
