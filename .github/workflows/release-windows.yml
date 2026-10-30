@@ -22,23 +22,12 @@ jobs:
         shell: pwsh
         run: .\build-installer.ps1 -Version 1.0.0
 
-      - name: Point release tag at this source
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          $tag = "windows-v1.0.0"
-          & git tag --force $tag $env:GITHUB_SHA
-          if ($LASTEXITCODE -ne 0) { throw "Could not create the Windows V1.0 tag." }
-          & git push --force origin "refs/tags/$tag"
-          if ($LASTEXITCODE -ne 0) { throw "Could not push the Windows V1.0 tag." }
-
       - name: Create V1.0 GitHub Release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = "windows-v1.0.0"
+          $tag = "windows-v1.0"
           $repo = $env:GITHUB_REPOSITORY
           $title = "Codex Keeper for Windows V1.0"
           $notes = "docs/RELEASES/V1.0.md"
@@ -52,6 +41,6 @@ jobs:
             if ($LASTEXITCODE -ne 0) { throw "Could not upload the installer assets." }
             & gh release edit $tag --title $title --notes-file $notes --repo $repo
           } else {
-            & gh release create $tag $installer $checksum --title $title --notes-file $notes --verify-tag --repo $repo
+            & gh release create $tag $installer $checksum --title $title --notes-file $notes --target $env:GITHUB_SHA --repo $repo
           }
           if ($LASTEXITCODE -ne 0) { throw "Could not create or update the V1.0 release." }
