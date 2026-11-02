@@ -168,7 +168,7 @@ public sealed class KeeperService(SettingsStore store)
         try
         {
             var task = _sessionScan?.Tasks?.FirstOrDefault(item => item.ThreadId == threadId);
-            if (selected && (task is null || !task.CanAutoResume || !IsProjectSelected(store.Snapshot(), task.WorkingDirectory)))
+            if (selected && (task is null || !task.CanSelect || !IsProjectSelected(store.Snapshot(), task.WorkingDirectory)))
                 return Task.CompletedTask;
             store.Update(settings =>
             {

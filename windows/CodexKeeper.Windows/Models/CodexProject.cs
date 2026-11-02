@@ -10,7 +10,7 @@ public sealed record CodexTask(
     DateTimeOffset UpdatedAt,
     bool IsRunning,
     bool IsQuotaBlocked,
-    bool CanAutoResume,
+    bool CanSelect,
     string? UnavailableReason = null,
     bool IsVerified = false);
 

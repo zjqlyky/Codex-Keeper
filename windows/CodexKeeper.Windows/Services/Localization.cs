@@ -57,6 +57,7 @@ internal static class Localization
         ["tasks.selection"] = ("已勾选 {0} 个任务，其中 {1} 个等待额度恢复。", "{0} tasks selected; {1} waiting for quota recovery."),
         ["tasks.running"] = ("正在运行", "Running"),
         ["tasks.blocked"] = ("因额度暂停，等待恢复", "Paused by quota; waiting for recovery"),
+        ["tasks.quotaEvidencePending"] = ("额度暂停记录不完整；勾选会保存授权，确认前不会自动续跑。", "Quota stop details are incomplete. Your selection is saved, but no resume is sent until verified."),
         ["tasks.idle"] = ("当前未因额度暂停", "Currently not paused by quota"),
         ["tasks.unverified"] = ("账户或任务归属未确认，无法自动续跑", "Account or task ownership is unverified; automatic resume is unavailable"),
         ["activity.title"] = ("最近活动", "Recent activity"),

@@ -36,12 +36,12 @@ public sealed class TaskOptionViewModel(Action<TaskOptionViewModel, bool> select
         var time = task.UpdatedAt.ToLocalTime().ToString(Localization.IsChinese ? "M月d日 HH:mm" : "MMM d, h:mm tt", CultureInfo.CurrentCulture);
         var shortId = task.ThreadId[..Math.Min(8, task.ThreadId.Length)];
         Detail = $"{task.Project}  ·  {time}  ·  {shortId}";
-        CanSelect = task.CanAutoResume;
+        CanSelect = task.CanSelect;
         _isSelected = selected && CanSelect;
-        Status = !CanSelect ? task.UnavailableReason ?? Localization.Text("tasks.unverified")
+        Status = task.UnavailableReason ?? (!CanSelect ? Localization.Text("tasks.unverified")
             : task.IsRunning ? Localization.Text("tasks.running")
             : task.IsQuotaBlocked ? Localization.Text("tasks.blocked")
-            : Localization.Text("tasks.idle");
+            : Localization.Text("tasks.idle"));
         foreach (var property in new[] { nameof(ThreadId), nameof(Title), nameof(WorkingDirectory), nameof(Detail), nameof(Status), nameof(CanSelect), nameof(IsSelected) }) Notify(property);
     }
 

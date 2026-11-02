@@ -60,21 +60,23 @@ public sealed class CodexSessionScanner(SettingsStore store)
                 var project = CodexProjectDiscovery.FindSavedProject(savedProjects, cwd)?.Name ?? CodexProjectDiscovery.LeafName(cwd);
                 var blocked = verified && state!.BlockedAt is not null;
                 var evidence = blocked && (state!.FiveHour is { UsedPercent: >= 100 } || state.Weekly is { UsedPercent: >= 100 });
-                var canSelect = ownsTask && verified && Directory.Exists(cwd) && (!blocked || evidence);
+                // Let the user save their selection even while quota evidence is incomplete.
+                // This does not make the task resumable: only verified, owned quota stops enter PausedTasks below.
+                var canSelect = Directory.Exists(cwd);
                 string? reason = null;
                 if (!verified) reason = Localization.Text("activity.taskScan");
                 else if (!ownsTask) reason = Localization.Text(string.IsNullOrWhiteSpace(boundAccount) ? "activity.account" : "activity.authChanged");
                 else if (!Directory.Exists(cwd)) reason = Localization.Text("activity.workspace");
-                else if (blocked && !evidence) reason = Localization.Text("activity.noQuotaEvidence");
+                else if (blocked && !evidence) reason = Localization.Text("tasks.quotaEvidencePending");
                 // Codex's sidebar title is kept in session_index.jsonl. The SQLite title can remain the
                 // original prompt after a conversation has been renamed in Codex.
                 var title = currentThreadNames.TryGetValue(row.ThreadId, out var currentTitle) ? currentTitle : row.Title;
                 tasks.Add(new CodexTask(row.ThreadId, DisplayTitle(title, project), project, cwd, row.UpdatedAt,
-                    verified && state!.IsRunning, blocked, canSelect, reason, verified));
-                if (!canSelect || !blocked || !evidence) continue;
+                    verified && state!.IsRunning, blocked && evidence, canSelect, reason, verified));
+                if (!ownsTask || !verified || !Directory.Exists(cwd) || !blocked || !evidence) continue;
                 var at = state!.BlockedAt!.Value;
                 paused.Add(new PausedTask(row.ThreadId, project, cwd, at, state.StoppedTurnId,
-                    state.FiveHour?.ResetsAt, state.Weekly?.ResetsAt,
+                    StopResetAt(state.FiveHourAtStop, at), StopResetAt(state.WeeklyAtStop, at),
                     state.FiveHour is { UsedPercent: >= 100 }, state.Weekly is { UsedPercent: >= 100 },
                     SettingsStore.StableAttemptKey(row.ThreadId, at)));
             }
@@ -338,27 +340,51 @@ public sealed class CodexSessionScanner(SettingsStore store)
     private static bool IsCodexQuota(JsonObject rateLimits) =>
         (rateLimits["limit_id"]?.ToString() ?? rateLimits["limitId"]?.ToString() ?? "codex") == "codex";
 
-    private static (QuotaWindow? FiveHour, QuotaWindow? Weekly) DecodeWindows(JsonObject rateLimits)
+    private static (RolloutQuotaWindow? FiveHour, RolloutQuotaWindow? Weekly) DecodeWindows(JsonObject rateLimits)
     {
-        QuotaWindow? five = null;
-        QuotaWindow? weekly = null;
+        RolloutQuotaWindow? five = null;
+        RolloutQuotaWindow? weekly = null;
         foreach (var key in new[] { "primary", "secondary" })
         {
             if (rateLimits[key] is not JsonObject item) continue;
             var used = Number(item["usedPercent"] ?? item["used_percent"]);
-            var duration = Number(item["windowDurationMins"] ?? item["window_minutes"]);
-            var reset = Number(item["resetsAt"] ?? item["resets_at"]);
-            if (used is null || used < 0 || duration is null || reset is null) continue;
+            var duration = Number(item["windowDurationMins"] ?? item["window_duration_mins"] ?? item["window_minutes"]);
+            var reset = DecodeReset(item["resetsAt"] ?? item["resets_at"]);
+            if (used is null || used < 0 || duration is null || duration <= 0) continue;
             try
             {
-                var window = new QuotaWindow(used.Value, checked((int)duration.Value), DateTimeOffset.FromUnixTimeMilliseconds(checked((long)(reset.Value * 1000))));
+                var window = new RolloutQuotaWindow(used.Value, checked((int)duration.Value), reset);
                 if (window.WindowMinutes is >= 240 and <= 360) five = window;
                 if (window.WindowMinutes is >= 8000 and <= 12000) weekly = window;
             }
-            catch (ArgumentOutOfRangeException) { }
             catch (OverflowException) { }
         }
         return (five, weekly);
+    }
+
+    private static DateTimeOffset? DecodeReset(JsonNode? value)
+    {
+        if (value is null) return null;
+        if (Number(value) is { } number)
+        {
+            try
+            {
+                var milliseconds = checked((long)(number > 100_000_000_000 ? number : number * 1000));
+                return DateTimeOffset.FromUnixTimeMilliseconds(milliseconds);
+            }
+            catch (ArgumentOutOfRangeException) { return null; }
+            catch (OverflowException) { return null; }
+        }
+        return DateTimeOffset.TryParse(value.ToString(), System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.AssumeUniversal, out var parsed) ? parsed : null;
+    }
+
+    private static DateTimeOffset? StopResetAt(RolloutQuotaWindow? window, DateTimeOffset blockedAt)
+    {
+        if (window is null) return null;
+        if (window.ResetsAt is { } reset && reset > blockedAt) return reset;
+        try { return blockedAt.AddMinutes(window.WindowMinutes); }
+        catch (ArgumentOutOfRangeException) { return null; }
     }
 
     private static double? Number(JsonNode? value) =>
@@ -407,6 +433,7 @@ public sealed class CodexSessionScanner(SettingsStore store)
         }
     }
     private sealed record ThreadCatalog(IReadOnlyList<ThreadRow> Rows, bool HasAccountColumn, bool Truncated);
+    private sealed record RolloutQuotaWindow(double UsedPercent, int WindowMinutes, DateTimeOffset? ResetsAt);
 
     private sealed class RolloutState
     {
@@ -420,10 +447,10 @@ public sealed class CodexSessionScanner(SettingsStore store)
         public string? CurrentTurnId { get; set; }
         public string? StoppedTurnId { get; set; }
         public DateTimeOffset? BlockedAt { get; set; }
-        public QuotaWindow? FiveHour { get; set; }
-        public QuotaWindow? Weekly { get; set; }
-        public QuotaWindow? FiveHourAtStop { get; set; }
-        public QuotaWindow? WeeklyAtStop { get; set; }
+        public RolloutQuotaWindow? FiveHour { get; set; }
+        public RolloutQuotaWindow? Weekly { get; set; }
+        public RolloutQuotaWindow? FiveHourAtStop { get; set; }
+        public RolloutQuotaWindow? WeeklyAtStop { get; set; }
     }
 
     private static class NativeSqlite
@@ -455,4 +482,3 @@ public sealed class CodexSessionScanner(SettingsStore store)
         }
     }
 }
-
