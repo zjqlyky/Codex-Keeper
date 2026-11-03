@@ -178,7 +178,39 @@ public sealed class KeeperService(SettingsStore store)
         }
         catch (Exception error) { SetStatus(Localization.Text("status.error"), SafeErrorMessage(error)); }
         Publish();
+        if (selected) _ = TryResumeSelectedTaskAsync(threadId);
         return Task.CompletedTask;
+    }
+
+    private async Task TryResumeSelectedTaskAsync(string threadId)
+    {
+        var settings = store.Snapshot();
+        if (!settings.Enabled || !settings.AutoResume ||
+            _sessionScan?.PausedTasks.Any(task => task.ThreadId == threadId) != true)
+            return;
+
+        await _operationGate.WaitAsync();
+        try
+        {
+            settings = store.Snapshot();
+            if (!settings.Enabled || !settings.AutoResume ||
+                !settings.SelectedThreadIds.Contains(threadId, StringComparer.Ordinal)) return;
+            await ScanSessionsCoreAsync(CancellationToken.None);
+            if (_sessionScan?.PausedTasks.Any(task => task.ThreadId == threadId) != true) return;
+            await RefreshUsageCoreAsync(CancellationToken.None);
+            await ProcessPausedTasksAsync(CancellationToken.None);
+        }
+        catch (Exception error)
+        {
+            var detail = SafeErrorMessage(error);
+            SetStatus(Localization.Text("status.error"), detail);
+            store.AddActivity(Localization.Format("activity.readFailed", detail));
+        }
+        finally
+        {
+            _operationGate.Release();
+            Publish();
+        }
     }
 
     public async Task RefreshProjectsAsync()
