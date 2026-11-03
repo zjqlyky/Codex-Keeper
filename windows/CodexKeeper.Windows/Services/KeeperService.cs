@@ -25,7 +25,6 @@ public sealed class KeeperService(SettingsStore store)
     private string _statusDetail = "";
     private bool _busy;
     private string? _lastScanErrorLogged;
-    private readonly HashSet<string> _earlyRecoveryNotices = new(StringComparer.Ordinal);
 
     public event EventHandler? StateChanged;
 
@@ -593,16 +592,6 @@ public sealed class KeeperService(SettingsStore store)
                 SetStatus(Localization.Text("status.ready"), Localization.Text("activity.quotaWait"));
                 continue;
             }
-            var deadlines = new List<DateTimeOffset>();
-            if (task.FiveHourWasExhausted && task.FiveHourResetAt is { } fiveReset) deadlines.Add(fiveReset);
-            if (task.WeeklyWasExhausted && task.WeeklyResetAt is { } weeklyReset) deadlines.Add(weeklyReset);
-            var expectedRecovery = deadlines.Max();
-            if (DateTimeOffset.Now < expectedRecovery || usage.CapturedAt < expectedRecovery)
-            {
-                if (_earlyRecoveryNotices.Add(task.AttemptKey)) store.AddActivity(Localization.Text("activity.earlyRecovery"));
-                SetStatus(Localization.Text("status.ready"), Localization.Text("activity.earlyRecovery"));
-                continue;
-            }
             if (task.FiveHourWasExhausted && (usage.FiveHour is null || usage.FiveHour.UsedPercent >= 100) ||
                 task.WeeklyWasExhausted && (usage.Weekly is null || usage.Weekly.UsedPercent >= 100))
             {
@@ -627,17 +616,7 @@ public sealed class KeeperService(SettingsStore store)
         {
             var latestUsage = await _usageService.ReadAsync(cancellationToken);
             UpdateUsage(latestUsage);
-            if (latestUsage.AccountId != accountId || latestUsage.CapturedAt <= task.BlockedAt || !latestUsage.HasAvailableQuota(DateTimeOffset.Now))
-                return;
-            var resets = new List<DateTimeOffset>();
-            if (task.FiveHourWasExhausted && task.FiveHourResetAt is { } five) resets.Add(five);
-            if (task.WeeklyWasExhausted && task.WeeklyResetAt is { } weekly) resets.Add(weekly);
-            if (resets.Count == 0 || latestUsage.CapturedAt < resets.Max() || DateTimeOffset.Now < resets.Max())
-            {
-                if (_earlyRecoveryNotices.Add(task.AttemptKey)) store.AddActivity(Localization.Text("activity.earlyRecovery"));
-                return;
-            }
-            if (task.FiveHourWasExhausted && latestUsage.FiveHour is null || task.WeeklyWasExhausted && latestUsage.Weekly is null) return;
+            if (latestUsage.AccountId != accountId || !IsQuotaRecoveredForTask(task, latestUsage, DateTimeOffset.Now)) return;
 
             var executable = CodexLocator.Find(store.Snapshot());
             await using var client = await CodexAppServerClient.ConnectAsync(executable, store.CodexHome, usageOnly: false, cancellationToken);
@@ -792,13 +771,11 @@ public sealed class KeeperService(SettingsStore store)
 
     private static bool IsQuotaRecoveredForTask(PausedTask task, QuotaSnapshot usage, DateTimeOffset now)
     {
+        // The stop-time reset is an estimate; a fresh same-account reading can confirm early recovery.
         if (usage.CapturedAt <= task.BlockedAt || !usage.HasAvailableQuota(now)) return false;
-        var resets = new List<DateTimeOffset>();
-        if (task.FiveHourWasExhausted && task.FiveHourResetAt is { } five) resets.Add(five);
-        else if (task.FiveHourWasExhausted) return false;
-        if (task.WeeklyWasExhausted && task.WeeklyResetAt is { } weekly) resets.Add(weekly);
-        else if (task.WeeklyWasExhausted) return false;
-        if (resets.Count == 0 || now < resets.Max() || usage.CapturedAt < resets.Max()) return false;
+        if (!task.FiveHourWasExhausted && !task.WeeklyWasExhausted) return false;
+        if (task.FiveHourWasExhausted && task.FiveHourResetAt is null) return false;
+        if (task.WeeklyWasExhausted && task.WeeklyResetAt is null) return false;
         if (task.FiveHourWasExhausted && (usage.FiveHour is null || usage.FiveHour.UsedPercent >= 100)) return false;
         if (task.WeeklyWasExhausted && (usage.Weekly is null || usage.Weekly.UsedPercent >= 100)) return false;
         return true;

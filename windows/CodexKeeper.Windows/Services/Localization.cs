@@ -82,7 +82,6 @@ internal static class Localization
         ["activity.quotaWait"] = ("额度仍未恢复，等待下次检查。", "Quota has not recovered yet. Waiting for the next check."),
         ["activity.noQuotaEvidence"] = ("发现额度停止记录，但缺少可信的重置时间，未自动续跑。", "A quota stop was found without a reliable reset deadline. No automatic resume was sent."),
         ["activity.workspace"] = ("项目目录不可用，未自动续跑。", "The project folder is unavailable. No automatic resume was sent."),
-        ["activity.earlyRecovery"] = ("额度在预期重置前恢复；请在 Codex 中检查原任务。", "Quota recovered earlier than expected. Review the original task in Codex."),
         ["activity.waitReset"] = ("额度已恢复，正在核对原任务…", "Quota recovered. Checking the original task…"),
         ["activity.authChanged"] = ("Codex 账户已更改，已停止自动操作。", "The Codex account changed. Automatic actions are paused."),
         ["activity.manualRequired"] = ("原任务需要手动确认；Keeper 已停止自动操作，请在 Codex 中查看。", "The original task needs your input. Keeper stopped automatic work; review it in Codex."),
